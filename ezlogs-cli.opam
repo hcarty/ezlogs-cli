@@ -1,0 +1,18 @@
+opam-version: "2.0"
+maintainer: "Hezekiah M. Carty <hez@0ok.org>"
+authors: [ "Hezekiah M. Carty <hez@0ok.org>" ]
+license: "Apache-2.0"
+homepage: "https://github.com/hcarty/ezlogs-cli"
+dev-repo: "git+https://github.com/hcarty/ezlogs-cli.git"
+bug-reports: "https://github.com/hcarty/ezlogs-cli"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "ocaml" {>= "4.03.0"}
+  "cmdliner"
+  "dune" {>= "1.8.0"}
+  "fmt"
+  "logs"
+]
+synopsis: "Drop-in support for Logs configuration with cmdliner"
