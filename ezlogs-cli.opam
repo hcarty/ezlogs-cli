@@ -14,5 +14,6 @@ depends: [
   "dune" {>= "1.8.0"}
   "fmt"
   "logs"
+  "yojson"
 ]
 synopsis: "Drop-in support for Logs configuration with cmdliner"
