@@ -18,5 +18,18 @@ module Json : sig
       This also pulls in the standard Logs configuration options for setting the
       log level.
 
-      All logs will be written to [stdout]. *)
+      All logs will be written to [stderr]. *)
 end
+
+type format =
+  | Line
+  | Json
+
+val logging : default:format -> unit Cmdliner.Term.t
+(** [logging format] can be used with Cmdliner to get automatic logging setup.
+    Log message structure ({!Line} or {!Json}) can be selected from the command
+    line. If no option is specified on the command line then [default] will be
+    used.
+
+    This acts as {!Line.logging} or {!Json.logging}, depending on which format
+    is selected. *)

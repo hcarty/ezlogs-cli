@@ -82,3 +82,26 @@ module Json = struct
 
   let logging = Cmdliner.Term.(const setup $ Logs_cli.level ())
 end
+
+type format =
+  | Line
+  | Json
+
+let setup (format : format) style_renderer level =
+  match format with
+  | Line -> Line.setup style_renderer level
+  | Json -> Json.setup level
+
+let format_conv : format Cmdliner.Arg.conv =
+  Cmdliner.Arg.enum [ ("line", Line); ("json", Json) ]
+
+let log_format default =
+  let doc = "Log format" in
+  let docv = "LOG_FORMAT" in
+  Cmdliner.Arg.(
+    value & opt format_conv default & info [ "log-format" ] ~doc ~docv)
+
+let logging ~default =
+  let format = log_format default in
+  Cmdliner.Term.(
+    const setup $ format $ Fmt_cli.style_renderer () $ Logs_cli.level ())
