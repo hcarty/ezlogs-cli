@@ -1,3 +1,4 @@
-(lang dune 1.8)
+(lang dune 2.5)
+
 (name ezlogs-cli)
-(using fmt 1.1)
+(using mdx 0.1)

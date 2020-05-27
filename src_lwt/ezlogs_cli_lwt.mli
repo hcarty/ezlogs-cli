@@ -1,4 +1,6 @@
 module Line : sig
+  val reporter : Lwt_fmt.formatter -> Logs.reporter
+
   val logging : unit Cmdliner.Term.t
   (** Use with Cmdliner to get automatic logging setup. Log messages will be
       prefixed with a date and time stamp along with their log level.

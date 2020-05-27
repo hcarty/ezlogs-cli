@@ -18,10 +18,12 @@ module Line = struct
   let pp_header =
     Fmt.suffix Fmt.(const string " ") @@ Fmt.prefix now_fmt Logs_fmt.pp_header
 
+  let reporter ppf = Logs_fmt.reporter ~pp_header ~app:ppf ~dst:ppf ()
+
   let setup style_renderer level =
     Fmt_tty.setup_std_outputs ?style_renderer ();
     Logs.set_level level;
-    Logs.set_reporter (Logs_fmt.reporter ~pp_header ());
+    Logs.set_reporter (reporter Fmt.stderr);
     ()
 
   let logging =

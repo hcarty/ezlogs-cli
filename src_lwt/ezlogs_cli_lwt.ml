@@ -9,8 +9,9 @@ module Line = struct
   let pp_header =
     Fmt.suffix Fmt.(const string " ") @@ Fmt.prefix now_fmt Logs_fmt.pp_header
 
-  let lwt_reporter () =
+  let reporter ppf =
     let buf_fmt ~like =
+      let like = Lwt_fmt.get_formatter like in
       let b = Buffer.create 512 in
       ( Fmt.with_buffer ~like b,
         fun () ->
@@ -18,16 +19,11 @@ module Line = struct
           Buffer.reset b;
           m )
     in
-    let (app, app_flush) = buf_fmt ~like:Fmt.stdout in
-    let (dst, dst_flush) = buf_fmt ~like:Fmt.stderr in
-    let reporter = Logs_fmt.reporter ~pp_header ~app ~dst () in
+    let (out, out_flush) = buf_fmt ~like:ppf in
+    let reporter = Logs_fmt.reporter ~pp_header ~app:out ~dst:out () in
     let report src level ~over k msgf =
       let k () =
-        let write () =
-          match level with
-          | Logs.App -> Lwt_io.write Lwt_io.stdout (app_flush ())
-          | _ -> Lwt_io.write Lwt_io.stderr (dst_flush ())
-        in
+        let write () = Lwt_io.write Lwt_io.stdout (out_flush ()) in
         let unblock () =
           over ();
           Lwt.return_unit
@@ -42,7 +38,7 @@ module Line = struct
   let setup style_renderer level =
     Fmt_tty.setup_std_outputs ?style_renderer ();
     Logs.set_level level;
-    Logs.set_reporter (lwt_reporter ());
+    Logs.set_reporter (reporter Lwt_fmt.stderr);
     ()
 
   let logging =
