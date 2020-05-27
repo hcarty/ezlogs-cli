@@ -1,3 +1,12 @@
+let timestamp epoch_time =
+  (* NOTE: This assumes the host is UTC *)
+  let { Unix.tm_year; tm_mon; tm_mday; tm_hour; tm_min; tm_sec; _ } =
+    Unix.gmtime epoch_time
+  in
+  let seconds = Float.of_int tm_sec +. fst (Float.modf epoch_time) in
+  Fmt.str "%04d-%02d-%02dT%02d:%02d:%06.3fZ" (tm_year + 1900) (tm_mon + 1)
+    tm_mday tm_hour tm_min seconds
+
 module Line = struct
   let now_fmt fmt () =
     let { Unix.tm_year; tm_mon; tm_mday; tm_hour; tm_min; tm_sec; _ } =
@@ -50,8 +59,9 @@ module Json = struct
             in
             let json : Json.t =
               `Assoc
-                (("level", `String (Logs.level_to_string (Some level)))
-                :: ("source", `String (Logs.Src.name src))
+                (("@timestamp", `String (timestamp (Unix.gettimeofday ())))
+                :: ("log.level", `String (Logs.level_to_string (Some level)))
+                :: ("log.logger", `String (Logs.Src.name src))
                 :: ("message", `String message)
                 :: tags_dict
                 )
