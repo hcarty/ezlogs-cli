@@ -1,4 +1,4 @@
 (library
  (name ezlogs_cli)
  (public_name ezlogs-cli)
- (libraries cmdliner fmt fmt.cli fmt.tty logs logs.cli logs.fmt))
+ (libraries cmdliner fmt fmt.cli fmt.tty logs logs.cli logs.fmt yojson))
