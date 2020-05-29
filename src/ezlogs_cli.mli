@@ -1,3 +1,8 @@
+module Common_tags : sig
+  val epoch : float Logs.Tag.def
+  (** A tag defining a Unix epoch time to associate with a log message. *)
+end
+
 module Line : sig
   val reporter : Format.formatter -> Logs.reporter
 

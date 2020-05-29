@@ -8,12 +8,19 @@ Let's load up the library and set a logging level.
 - : unit = ()
 ```
 
+And we'll define a fixed timestamp to use so the output here in the README is
+stable over time.
+```ocaml
+# let tags = Logs.Tag.empty |> Logs.Tag.add Ezlogs_cli.Common_tags.epoch 2590779494.386;;
+val tags : Logs.Tag.set = <abstr>
+```
+
 Setup a logger with simple, unstructured logging and give it a try!
 ```ocaml
 # Logs.set_reporter (Ezlogs_cli.Line.reporter Fmt.stdout);;
 - : unit = ()
-# Logs.info (fun m -> m "Everything is fine");
-2020-05-27 23:22:13 [INFO] Everything is fine
+# Logs.info (fun m -> m "Hello from the future" ~tags);
+2052-02-05T20:58:14.386Z [INFO] Hello from the future
 - : unit = ()
 ```
 
@@ -21,8 +28,8 @@ Setup a logger with simple, unstructured logging and give it a try!
 ```ocaml
 # Logs.set_reporter (Ezlogs_cli.Json.reporter Fmt.stdout);;
 - : unit = ()
-# Logs.info (fun m -> m "Everything is fine");;
-{"@timestamp":"2020-05-27T23:22:13.632Z","log.level":"info","log.logger":"application","message":"Everything is fine"}
+# Logs.info (fun m -> m "Hello from the future" ~tags);;
+{"@timestamp":"2052-02-05T20:58:14.386Z","log.level":"info","log.logger":"application","message":"Hello from the future"}
 - : unit = ()
 ```
 

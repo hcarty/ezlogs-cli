@@ -1,24 +1,52 @@
-let timestamp epoch_time =
-  (* NOTE: This assumes the host is UTC *)
-  let { Unix.tm_year; tm_mon; tm_mday; tm_hour; tm_min; tm_sec; _ } =
-    Unix.gmtime epoch_time
+module Common_tags = struct
+  let epoch_to_timestamp epoch_time =
+    (* NOTE: This assumes the host is UTC *)
+    let { Unix.tm_year; tm_mon; tm_mday; tm_hour; tm_min; tm_sec; _ } =
+      Unix.gmtime epoch_time
+    in
+    let seconds = Float.of_int tm_sec +. fst (Float.modf epoch_time) in
+    Fmt.str "%04d-%02d-%02dT%02d:%02d:%06.3fZ" (tm_year + 1900) (tm_mon + 1)
+      tm_mday tm_hour tm_min seconds
+
+  let pp_epoch = Fmt.of_to_string epoch_to_timestamp
+
+  let epoch =
+    Logs.Tag.def ~doc:"Unix epoch to use as the log time" "epoch" pp_epoch
+end
+
+let timestamp_of_tags_or_now (tags : Logs.Tag.set option) =
+  let epoch =
+    match tags with
+    | None -> Unix.gettimeofday ()
+    | Some tags ->
+      ( match Logs.Tag.find Common_tags.epoch tags with
+      | None -> Unix.gettimeofday ()
+      | Some epoch -> epoch
+      )
   in
-  let seconds = Float.of_int tm_sec +. fst (Float.modf epoch_time) in
-  Fmt.str "%04d-%02d-%02dT%02d:%02d:%06.3fZ" (tm_year + 1900) (tm_mon + 1)
-    tm_mday tm_hour tm_min seconds
+  Fmt.str "%a" (Logs.Tag.printer Common_tags.epoch) epoch
 
 module Line = struct
-  let now_fmt fmt () =
-    let { Unix.tm_year; tm_mon; tm_mday; tm_hour; tm_min; tm_sec; _ } =
-      Unix.gmtime @@ Unix.gettimeofday ()
+  let reporter ppf =
+    let report _src level ~over k msgf =
+      let continuation _ =
+        over ();
+        k ()
+      in
+      let write header tags k ppf fmt =
+        Fmt.kstr
+          (fun message ->
+            let timestamp = timestamp_of_tags_or_now tags in
+            let level =
+              String.uppercase_ascii (Logs.level_to_string (Some level))
+            in
+            Fmt.kpf k ppf "%s%s [%s] %s@." header timestamp level message)
+          fmt
+      in
+      msgf @@ fun ?(header = "") ?tags fmt ->
+      write header tags continuation ppf fmt
     in
-    Fmt.pf fmt "%04d-%02d-%02d %02d:%02d:%02d " (tm_year + 1900) (tm_mon + 1)
-      tm_mday tm_hour tm_min tm_sec
-
-  let pp_header =
-    Fmt.suffix Fmt.(const string " ") @@ Fmt.prefix now_fmt Logs_fmt.pp_header
-
-  let reporter ppf = Logs_fmt.reporter ~pp_header ~app:ppf ~dst:ppf ()
+    { Logs.report }
 
   let setup style_renderer level =
     Fmt_tty.setup_std_outputs ?style_renderer ();
@@ -34,6 +62,7 @@ module Json = struct
   module Json = Yojson.Basic
 
   let dict_of_tags (tags : Logs.Tag.set) =
+    let tags = Logs.Tag.rem Common_tags.epoch tags in
     Logs.Tag.fold
       (fun tag dict ->
         match tag with
@@ -61,7 +90,7 @@ module Json = struct
             in
             let json : Json.t =
               `Assoc
-                (("@timestamp", `String (timestamp (Unix.gettimeofday ())))
+                (("@timestamp", `String (timestamp_of_tags_or_now tags))
                 :: ("log.level", `String (Logs.level_to_string (Some level)))
                 :: ("log.logger", `String (Logs.Src.name src))
                 :: ("message", `String message)
