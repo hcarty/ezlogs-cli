@@ -43,6 +43,10 @@ module Ecs : sig
     val find : elt -> t -> elt option
   end
 
+  val of_list : t list -> Fields.t
+
+  val tags_of_list : t list -> Logs.Tag.set
+
   val tag : Fields.t Logs.Tag.def
 end
 

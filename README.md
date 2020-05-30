@@ -11,8 +11,7 @@ Let's load up the library and set a logging level.
 And we'll define a fixed timestamp to use so the output here in the README is
 stable over time.
 ```ocaml
-# let ecs = Ezlogs_cli.Ecs.Fields.empty |> Ezlogs_cli.Ecs.Fields.replace (Base (Timestamp 2590779494.386));;
-# let tags = Logs.Tag.empty |> Logs.Tag.add Ezlogs_cli.Ecs.tag ecs;;
+# let tags = Ezlogs_cli.Ecs.tags_of_list [Base (Timestamp 2590779494.386)];;
 val tags : Logs.Tag.set = <abstr>
 ```
 

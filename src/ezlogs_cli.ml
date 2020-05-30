@@ -130,6 +130,10 @@ module Ecs = struct
   let tag =
     Logs.Tag.def ~doc:"Elastic Common Schema (ECS) fields" "ecs" Fields.pp
 
+  let of_list fields = Fields.of_list fields
+
+  let tags_of_list fields = Logs.Tag.add tag (of_list fields) Logs.Tag.empty
+
   let ecs_fields_of_tags (tags : Logs.Tag.set) : Json.t String_map.t =
     match Logs.Tag.find tag tags with
     | None -> String_map.empty
