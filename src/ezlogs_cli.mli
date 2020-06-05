@@ -10,7 +10,7 @@ end
 module Ecs : sig
   module Base : sig
     type t =
-      | Timestamp of float
+      | Timestamp of Ptime.t
       | Tags of string list
       | Labels of (string * string) list
   end
@@ -22,6 +22,24 @@ module Ecs : sig
       | Stack_trace of (exn * Printexc.raw_backtrace)
       | Type of exn
   end
+  module Trace : sig
+    type t =
+      | Trace_id of string
+      | Transaction_id of string
+  end
+  module Url : sig
+    type t =
+      | Domain of string
+      | Fragment of string
+      | Full of Uri.t
+      | Password of string
+      | Path of string
+      | Query of string
+      | Scheme of string
+      | Username of string
+
+    val of_uri : ?keep_password:bool -> Uri.t -> t list
+  end
 
   module type Custom_field = sig
     module Def : Ecs_field_def
@@ -31,6 +49,8 @@ module Ecs : sig
   type t =
     | Base of Base.t
     | Error of Error.t
+    | Trace of Trace.t
+    | Url of Url.t
     | Custom of (module Custom_field)
 
   module Fields : sig
@@ -43,9 +63,15 @@ module Ecs : sig
     val find : elt -> t -> elt option
   end
 
+  val of_uri : ?keep_password:bool -> Uri.t -> t list
+
   val of_list : t list -> Fields.t
 
   val tags_of_list : t list -> Logs.Tag.set
+
+  val add_tag : t -> Logs.Tag.set -> Logs.Tag.set
+
+  val add_tags : t list -> Logs.Tag.set -> Logs.Tag.set
 
   val tag : Fields.t Logs.Tag.def
 end

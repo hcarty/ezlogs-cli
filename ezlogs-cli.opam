@@ -13,6 +13,8 @@ depends: [
   "fmt" {>= "0.8.8"}
   "logs" {>= "0.7.0"}
   "mdx" {with-test & >= "1.6.0"}
+  "ptime" {>= "0.8.5"}
+  "uri" {>= "3.0.0"}
   "yojson" {>= "1.6.0"}
 ]
 build: [

@@ -14,6 +14,7 @@ depends: [
   "logs" {>= "0.7.0"}
   "lwt" {>= "4.0.0"}
   "mdx" {with-test & >= "1.6.0"}
+  "ptime" {>= "0.8.5"}
   "yojson" {>= "1.6.0"}
 ]
 build: [

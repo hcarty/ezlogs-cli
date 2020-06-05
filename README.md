@@ -11,7 +11,9 @@ Let's load up the library and set a logging level.
 And we'll define a fixed timestamp to use so the output here in the README is
 stable over time.
 ```ocaml
-# let tags = Ezlogs_cli.Ecs.tags_of_list [Base (Timestamp 2590779494.386)];;
+# let timestamp = Ptime.of_float_s 2590779494.386 |> Option.get;;
+val timestamp : Ptime.t = <abstr>
+# let tags = Ezlogs_cli.Ecs.tags_of_list [Base (Timestamp timestamp)];;
 val tags : Logs.Tag.set = <abstr>
 ```
 
@@ -32,5 +34,26 @@ Setup a logger with simple, unstructured logging and give it a try!
 {"@timestamp":"2052-02-05T20:58:14.386Z","log.level":"info","log.logger":"application","message":"Hello from the future"}
 - : unit = ()
 ```
+
+We can add fields to include more details.
+```ocaml
+# let error_tags = Ezlogs_cli.Ecs.add_tag (Error (Code "failure-101")) tags;;
+val error_tags : Logs.Tag.set = <abstr>
+# Logs.err (fun m -> m "There was a failure" ~tags:error_tags);;
+{"@timestamp":"2052-02-05T20:58:14.386Z","error.code":"failure-101","log.level":"error","log.logger":"application","message":"There was a failure"}
+- : unit = ()
+```
+
+Maybe we're working with URLs - we can log that too!
+```ocaml
+# let uri = Uri.of_string "https://me:secret@example.com:9090/path?to=success#downhere";;
+val uri : Uri.t = <abstr>
+# let tags = Ezlogs_cli.Ecs.add_tags (Ezlogs_cli.Ecs.of_uri uri) tags;;
+val tags : Logs.Tag.set = <abstr>
+# Logs.info (fun m -> m "Finished request" ~tags);;
+{"@timestamp":"2052-02-05T20:58:14.386Z","log.level":"info","log.logger":"application","message":"Finished request","url.domain":"example.com","url.fragment":"downhere","url.full":"https://me@example.com:9090/path?to=success#downhere","url.path":"/path","url.query":"to=success","url.scheme":"https","url.username":"me"}
+- : unit = ()
+```
+Look, no passwords!
 
 [ECS]: https://www.elastic.co/guide/en/ecs/current/ecs-reference.html
