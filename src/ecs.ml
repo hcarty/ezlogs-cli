@@ -75,6 +75,92 @@ module Error = struct
 end
 module _ : Field_def = Error
 
+module Hash = struct
+  type t =
+    | Md5 of string
+    | Sha1 of string
+    | Sha256 of string
+    | Sha512 of string
+
+  let to_name (field : t) =
+    let suffix =
+      match field with
+      | Md5 _ -> "md5"
+      | Sha1 _ -> "sha1"
+      | Sha256 _ -> "sha256"
+      | Sha512 _ -> "sha512"
+    in
+    "hash." ^ suffix
+
+  let pp ppf (field : t) =
+    match field with
+    | Md5 hash
+    | Sha1 hash
+    | Sha256 hash
+    | Sha512 hash ->
+      Fmt.string ppf hash
+
+  let to_json (field : t) : Json.t =
+    match field with
+    | Md5 hash
+    | Sha1 hash
+    | Sha256 hash
+    | Sha512 hash ->
+      `String hash
+end
+module _ : Field_def = Hash
+
+module File = struct
+  type t =
+    | Hash of Hash.t
+    | Size of int
+
+  let to_name (field : t) =
+    let suffix =
+      match field with
+      | Hash hash -> Hash.to_name hash
+      | Size _ -> "size"
+    in
+    "file." ^ suffix
+
+  let pp ppf (field : t) =
+    match field with
+    | Hash hash -> Hash.pp ppf hash
+    | Size size -> Fmt.int ppf size
+
+  let to_json (field : t) : Json.t =
+    match field with
+    | Hash hash -> Hash.to_json hash
+    | Size size -> `Int size
+end
+module _ : Field_def = File
+
+module Log = struct
+  type t =
+    | Origin_file of string
+    | Origin_line of int
+    | Origin_function of string
+
+  let to_name (field : t) =
+    match field with
+    | Origin_file _ -> "log.origin.file"
+    | Origin_line _ -> "log.origin.line"
+    | Origin_function _ -> "log.origin.function"
+
+  let pp ppf (field : t) =
+    match field with
+    | Origin_file file -> Fmt.string ppf file
+    | Origin_line line -> Fmt.int ppf line
+    | Origin_function f -> Fmt.string ppf f
+
+  let to_json (field : t) : Json.t =
+    match field with
+    | Origin_file file -> `String file
+    | Origin_line line -> `Int line
+    | Origin_function f -> `String f
+end
+module _ : Field_def = Log
+
 module Trace = struct
   type t =
     | Trace_id of string
@@ -164,6 +250,8 @@ end
 type t =
   | Base of Base.t
   | Error of Error.t
+  | File of File.t
+  | Log of Log.t
   | Trace of Trace.t
   | Url of Url.t
   | Custom of (module Custom_field)
@@ -172,6 +260,8 @@ let to_name (field : t) =
   match field with
   | Base b -> Base.to_name b
   | Error e -> Error.to_name e
+  | File f -> File.to_name f
+  | Log l -> Log.to_name l
   | Trace t -> Trace.to_name t
   | Url u -> Url.to_name u
   | Custom (module M) -> M.Def.to_name M.value
@@ -180,6 +270,8 @@ let pp ppf (field : t) =
   match field with
   | Base b -> Base.pp ppf b
   | Error e -> Error.pp ppf e
+  | File f -> File.pp ppf f
+  | Log l -> Log.pp ppf l
   | Trace t -> Trace.pp ppf t
   | Url u -> Url.pp ppf u
   | Custom (module M) -> M.Def.pp ppf M.value
@@ -188,6 +280,8 @@ let to_json (field : t) =
   match field with
   | Base b -> Base.to_json b
   | Error e -> Error.to_json e
+  | File f -> File.to_json f
+  | Log l -> Log.to_json l
   | Trace t -> Trace.to_json t
   | Url u -> Url.to_json u
   | Custom (module M) -> M.Def.to_json M.value

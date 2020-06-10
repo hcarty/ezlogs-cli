@@ -28,6 +28,24 @@ module Error : sig
     | Stack_trace of (exn * Printexc.raw_backtrace)
     | Type of exn
 end
+module Hash : sig
+  type t =
+    | Md5 of string
+    | Sha1 of string
+    | Sha256 of string
+    | Sha512 of string
+end
+module File : sig
+  type t =
+    | Hash of Hash.t
+    | Size of int
+end
+module Log : sig
+  type t =
+    | Origin_file of string
+    | Origin_line of int
+    | Origin_function of string
+end
 module Trace : sig
   type t =
     | Trace_id of string
@@ -55,6 +73,8 @@ end
 type t =
   | Base of Base.t
   | Error of Error.t
+  | File of File.t
+  | Log of Log.t
   | Trace of Trace.t
   | Url of Url.t
   | Custom of (module Custom_field)

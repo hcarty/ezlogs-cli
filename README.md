@@ -50,12 +50,18 @@ Maybe we're working with URLs - we can log that too!
 ```ocaml
 # let uri = Uri.of_string "https://me:secret@example.com:9090/path?to=success#downhere";;
 val uri : Uri.t = <abstr>
-# let tags = Ecs.add_tags (Ecs.of_uri uri) tags;;
+# let url_tags = Ecs.add_tags (Ecs.of_uri uri) tags;;
 val tags : Logs.Tag.set = <abstr>
-# Logs.info (fun m -> m "Finished request" ~tags);;
+# Logs.info (fun m -> m "Finished request" ~tags:url_tags);;
 {"@timestamp":"2052-02-05T20:58:14.386Z","ecs.version":"1.5.0","log.level":"info","log.logger":"application","message":"Finished request","url.domain":"example.com","url.fragment":"downhere","url.full":"https://me@example.com:9090/path?to=success#downhere","url.path":"/path","url.query":"to=success","url.scheme":"https","url.username":"me"}
 - : unit = ()
 ```
 Look, no passwords!
+
+File information can be relevant.
+```ocaml
+# let file_tags = Ecs.add_tags [File (Hash (Md5 "INVALID MD5")); File (Size 8192)] tags;;
+# Logs.info (fun m -> m "Saved file" ~tags:file_tags);;
+```
 
 [ECS]: https://www.elastic.co/guide/en/ecs/current/ecs-reference.html
