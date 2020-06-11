@@ -145,6 +145,7 @@ end
 type t =
   | Base of Base.t
   | Error of Error.t
+  | Event of Event.t
   | File of File.t
   | Log of Log.t
   | Trace of Trace.t

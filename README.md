@@ -46,6 +46,17 @@ val error_tags : Logs.Tag.set = <abstr>
 - : unit = ()
 ```
 
+Event logs can be quite descriptive.
+```ocaml
+# let file_uri = Uri.of_string "file:///home/ecs/newfile.ext";;
+val file_uri : Uri.t = <abstr>
+# let event_tags = Ecs.add_tags [Event (Category [File]); Event (Kind Event); Event (Outcome Success); Event (Type [Creation]); Event (Url file_uri); File (Hash (Md5 "NOT A HASH"))] tags;;
+val event_tags : Logs.Tag.set = <abstr>
+# Logs.info (fun m -> m "Not sure this message is necessary" ~tags:event_tags);;
+{"@timestamp":"2052-02-05T20:58:14.386Z","ecs.version":"1.5.0","event.category":["file"],"event.kind":"event","event.outcome":"success","event.type":["creation"],"event.url":"file:///home/ecs/newfile.ext","file.hash.md5":"NOT A HASH","log.level":"info","log.logger":"application","message":"Not sure this message is necessary"}
+- : unit = ()
+```
+
 Maybe we're working with URLs - we can log that too!
 ```ocaml
 # let uri = Uri.of_string "https://me:secret@example.com:9090/path?to=success#downhere";;

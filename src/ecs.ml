@@ -440,6 +440,7 @@ end
 type t =
   | Base of Base.t
   | Error of Error.t
+  | Event of Event.t
   | File of File.t
   | Log of Log.t
   | Trace of Trace.t
@@ -449,6 +450,7 @@ type t =
 let to_name (field : t) =
   match field with
   | Base b -> Base.to_name b
+  | Event e -> Event.to_name e
   | Error e -> Error.to_name e
   | File f -> File.to_name f
   | Log l -> Log.to_name l
@@ -459,6 +461,7 @@ let to_name (field : t) =
 let pp ppf (field : t) =
   match field with
   | Base b -> Base.pp ppf b
+  | Event e -> Event.pp ppf e
   | Error e -> Error.pp ppf e
   | File f -> File.pp ppf f
   | Log l -> Log.pp ppf l
@@ -469,6 +472,7 @@ let pp ppf (field : t) =
 let to_json (field : t) =
   match field with
   | Base b -> Base.to_json b
+  | Event e -> Event.to_json e
   | Error e -> Error.to_json e
   | File f -> File.to_json f
   | Log l -> Log.to_json l
