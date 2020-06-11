@@ -486,6 +486,16 @@ type t =
   | Url of Url.t
   | Custom of (module Custom_field)
 
+let base fields = List.map (fun f -> Base f) fields
+let error fields = List.map (fun f -> Error f) fields
+let event fields = List.map (fun f -> Event f) fields
+let file fields = List.map (fun f -> File f) fields
+let log fields = List.map (fun f -> Log f) fields
+let service fields = List.map (fun f -> Service f) fields
+let trace fields = List.map (fun f -> Trace f) fields
+let url fields = List.map (fun f -> Url f) fields
+let custom fields = List.map (fun f -> Custom f) fields
+
 let to_name (field : t) =
   match field with
   | Base b -> Base.to_name b
@@ -566,7 +576,11 @@ let add_tags fields tags =
     | None -> Fields.empty
     | Some fields -> fields
   in
-  let fields = Fields.add_seq (List.to_seq fields) existing_fields in
+  let fields =
+    List.fold_left
+      (fun accu fields -> Fields.add_seq (List.to_seq fields) accu)
+      existing_fields fields
+  in
   Logs.Tag.rem tag tags |> Logs.Tag.add tag fields
 
 let fields_of_tags (tags : Logs.Tag.set) : Json.t String_map.t =
