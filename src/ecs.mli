@@ -118,6 +118,16 @@ module Log : sig
     | Origin_line of int
     | Origin_function of string
 end
+module Service : sig
+  type t =
+    | Ephemeral_id of string
+    | Id of string
+    | Name of string
+    | Node_name of string
+    | State of string
+    | Type of string
+    | Version of string
+end
 module Trace : sig
   type t =
     | Trace_id of string
@@ -148,6 +158,7 @@ type t =
   | Event of Event.t
   | File of File.t
   | Log of Log.t
+  | Service of Service.t
   | Trace of Trace.t
   | Url of Url.t
   | Custom of (module Custom_field)

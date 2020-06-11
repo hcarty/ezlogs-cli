@@ -351,6 +351,44 @@ module Log = struct
 end
 module _ : Field_def = Log
 
+module Service = struct
+  type t =
+    | Ephemeral_id of string
+    | Id of string
+    | Name of string
+    | Node_name of string
+    | State of string
+    | Type of string
+    | Version of string
+
+  let to_name (field : t) =
+    let suffix =
+      match field with
+      | Ephemeral_id _ -> "ephemeral_id"
+      | Id _ -> "id"
+      | Name _ -> "name"
+      | Node_name _ -> "node.name"
+      | State _ -> "state"
+      | Type _ -> "type"
+      | Version _ -> "version"
+    in
+    "service." ^ suffix
+
+  let pp ppf (field : t) =
+    match field with
+    | Ephemeral_id s
+    | Id s
+    | Name s
+    | Node_name s
+    | State s
+    | Type s
+    | Version s ->
+      Fmt.string ppf s
+
+  let to_json (field : t) : Json.t = `String (Fmt.str "%a" pp field)
+end
+module _ : Field_def = Service
+
 module Trace = struct
   type t =
     | Trace_id of string
@@ -443,6 +481,7 @@ type t =
   | Event of Event.t
   | File of File.t
   | Log of Log.t
+  | Service of Service.t
   | Trace of Trace.t
   | Url of Url.t
   | Custom of (module Custom_field)
@@ -454,6 +493,7 @@ let to_name (field : t) =
   | Error e -> Error.to_name e
   | File f -> File.to_name f
   | Log l -> Log.to_name l
+  | Service s -> Service.to_name s
   | Trace t -> Trace.to_name t
   | Url u -> Url.to_name u
   | Custom (module M) -> M.Def.to_name M.value
@@ -465,6 +505,7 @@ let pp ppf (field : t) =
   | Error e -> Error.pp ppf e
   | File f -> File.pp ppf f
   | Log l -> Log.pp ppf l
+  | Service s -> Service.pp ppf s
   | Trace t -> Trace.pp ppf t
   | Url u -> Url.pp ppf u
   | Custom (module M) -> M.Def.pp ppf M.value
@@ -476,6 +517,7 @@ let to_json (field : t) =
   | Error e -> Error.to_json e
   | File f -> File.to_json f
   | Log l -> Log.to_json l
+  | Service s -> Service.to_json s
   | Trace t -> Trace.to_json t
   | Url u -> Url.to_json u
   | Custom (module M) -> M.Def.to_json M.value
