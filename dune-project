@@ -21,6 +21,7 @@
   (fmt (>= 0.8.8))
   (logs (>= 0.7.0))
   (mdx (and :with-test (>= 1.6.0)))
+  (ppx_deriving (>= 4.5))
   (ptime (>= 0.8.5))
   (uri (>= 3.0.0))
   (yojson (>= 1.6.0))))

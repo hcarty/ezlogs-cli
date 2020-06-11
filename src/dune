@@ -1,5 +1,7 @@
 (library
  (name ezlogs_cli)
  (public_name ezlogs-cli)
+ (preprocess
+  (pps ppx_deriving.std))
  (libraries cmdliner fmt fmt.cli fmt.tty logs logs.cli logs.fmt
    ptime.clock.os uri yojson))

@@ -75,6 +75,196 @@ module Error = struct
 end
 module _ : Field_def = Error
 
+module Event = struct
+  type category =
+    | Authentication
+    | Database
+    | Driver
+    | File
+    | Host
+    | Iam
+    | Intrusion_detection
+    | Malware
+    | Network
+    | Package
+    | Process
+    | Web
+  [@@deriving show { with_path = false }]
+  let pp_category ppf (c : category) =
+    let s = Fmt.str "%a" pp_category c in
+    Fmt.string ppf (String.lowercase_ascii s)
+  let category_to_string (c : category) =
+    String.lowercase_ascii (show_category c)
+
+  type kind =
+    | Alert
+    | Event
+    | Metric
+    | State
+    | Pipeline_error
+    | Signal
+  [@@deriving show { with_path = false }]
+  let pp_kind ppf (k : kind) =
+    let s = Fmt.str "%a" pp_kind k in
+    Fmt.string ppf (String.lowercase_ascii s)
+  let kind_to_string (k : kind) = String.lowercase_ascii (show_kind k)
+
+  type outcome =
+    | Failure
+    | Success
+    | Unknown
+  [@@deriving show { with_path = false }]
+  let pp_outcome ppf (o : outcome) =
+    let s = Fmt.str "%a" pp_outcome o in
+    Fmt.string ppf (String.lowercase_ascii s)
+  let outcome_to_string (o : outcome) = String.lowercase_ascii (show_outcome o)
+
+  type type_ =
+    | Access
+    | Admin
+    | Allowed
+    | Change
+    | Connection
+    | Creation
+    | Deletion
+    | Denied
+    | End
+    | Error
+    | Group
+    | Info
+    | Installation
+    | Protocol
+    | Start
+    | User
+  [@@deriving show { with_path = false }]
+  let pp_type_ ppf (t : type_) =
+    let s = Fmt.str "%a" pp_type_ t in
+    Fmt.string ppf (String.lowercase_ascii s)
+  let type__to_string (t : type_) = String.lowercase_ascii (show_type_ t)
+
+  type t =
+    | Action of string
+    | Category of category list
+    | Code of string
+    | Created of Ptime.t
+    | Dataset of string
+    | Duration of int
+    | End of Ptime.t
+    | Hash of string
+    | Id of string
+    | Ingested of Ptime.t
+    | Kind of kind
+    | Module of string
+    | Original of string
+    | Outcome of outcome
+    | Provider of string
+    | Reference of Uri.t
+    | Risk_score of float
+    | Risk_score_norm of float
+    | Sequence of int
+    | Severity of int
+    | Start of Ptime.t
+    | Timezone of string
+    | Type of type_ list
+    | Url of Uri.t
+
+  let to_name (field : t) =
+    let suffix =
+      match field with
+      | Action _ -> "action"
+      | Category _ -> "category"
+      | Code _ -> "code"
+      | Created _ -> "created"
+      | Dataset _ -> "dataset"
+      | Duration _ -> "duration"
+      | End _ -> "end"
+      | Hash _ -> "hash"
+      | Id _ -> "id"
+      | Ingested _ -> "ingested"
+      | Kind _ -> "kind"
+      | Module _ -> "module"
+      | Original _ -> "original"
+      | Outcome _ -> "outcome"
+      | Provider _ -> "provider"
+      | Reference _ -> "reference"
+      | Risk_score _ -> "risk_score"
+      | Risk_score_norm _ -> "risk_score_norm"
+      | Sequence _ -> "sequence"
+      | Severity _ -> "severity"
+      | Start _ -> "start"
+      | Timezone _ -> "timezone"
+      | Type _ -> "type"
+      | Url _ -> "url"
+    in
+    "event." ^ suffix
+
+  let pp ppf (field : t) =
+    match field with
+    | Action s
+    | Code s
+    | Dataset s
+    | Hash s
+    | Id s
+    | Module s
+    | Original s
+    | Provider s
+    | Timezone s ->
+      Fmt.string ppf s
+    | Category cs -> Fmt.(Dump.list pp_category) ppf cs
+    | Created epoch
+    | End epoch
+    | Ingested epoch
+    | Start epoch ->
+      Epoch.pp_timestamp ppf epoch
+    | Duration i
+    | Sequence i
+    | Severity i ->
+      Fmt.int ppf i
+    | Kind k -> pp_kind ppf k
+    | Outcome o -> pp_outcome ppf o
+    | Reference u
+    | Url u ->
+      Uri.pp ppf u
+    | Risk_score f
+    | Risk_score_norm f ->
+      Fmt.float_dfrac 3 ppf f
+    | Type ts -> Fmt.(Dump.list pp_type_) ppf ts
+
+  let to_json (field : t) : Json.t =
+    match field with
+    | Action s
+    | Code s
+    | Dataset s
+    | Hash s
+    | Id s
+    | Module s
+    | Original s
+    | Provider s
+    | Timezone s ->
+      `String s
+    | Category cs ->
+      `List (List.map (fun c -> `String (category_to_string c)) cs)
+    | Created epoch
+    | End epoch
+    | Ingested epoch
+    | Start epoch ->
+      `String (Epoch.to_timestamp epoch)
+    | Duration i
+    | Sequence i
+    | Severity i ->
+      `Int i
+    | Kind k -> `String (kind_to_string k)
+    | Outcome o -> `String (outcome_to_string o)
+    | Reference u
+    | Url u ->
+      `String (Uri.to_string u)
+    | Risk_score f
+    | Risk_score_norm f ->
+      `Float f
+    | Type ts -> `List (List.map (fun t -> `String (type__to_string t)) ts)
+end
+module _ : Field_def = Event
+
 module Hash = struct
   type t =
     | Md5 of string

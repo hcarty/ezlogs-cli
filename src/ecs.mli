@@ -28,6 +28,78 @@ module Error : sig
     | Stack_trace of (exn * Printexc.raw_backtrace)
     | Type of exn
 end
+module Event : sig
+  type category =
+    | Authentication
+    | Database
+    | Driver
+    | File
+    | Host
+    | Iam
+    | Intrusion_detection
+    | Malware
+    | Network
+    | Package
+    | Process
+    | Web
+
+  type kind =
+    | Alert
+    | Event
+    | Metric
+    | State
+    | Pipeline_error
+    | Signal
+
+  type outcome =
+    | Failure
+    | Success
+    | Unknown
+
+  type type_ =
+    | Access
+    | Admin
+    | Allowed
+    | Change
+    | Connection
+    | Creation
+    | Deletion
+    | Denied
+    | End
+    | Error
+    | Group
+    | Info
+    | Installation
+    | Protocol
+    | Start
+    | User
+
+  type t =
+    | Action of string
+    | Category of category list
+    | Code of string
+    | Created of Ptime.t
+    | Dataset of string
+    | Duration of int
+    | End of Ptime.t
+    | Hash of string
+    | Id of string
+    | Ingested of Ptime.t
+    | Kind of kind
+    | Module of string
+    | Original of string
+    | Outcome of outcome
+    | Provider of string
+    | Reference of Uri.t
+    | Risk_score of float
+    | Risk_score_norm of float
+    | Sequence of int
+    | Severity of int
+    | Start of Ptime.t
+    | Timezone of string
+    | Type of type_ list
+    | Url of Uri.t
+end
 module Hash : sig
   type t =
     | Md5 of string
