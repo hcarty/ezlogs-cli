@@ -1,11 +1,10 @@
-# Easy logging setup for OCaml + Logs + Cmdliner
+# ECS-compliant logging for OCaml using Logs + Cmdliner
 
 Let's load up the library and set a logging level.
 ```ocaml
+# #require "ecs";;
 # #require "ezlogs-cli";;
 # #require "ezlogs-cli-lwt";;
-# module Ecs = Ezlogs_cli.Ecs;;
-module Ecs = Ezlogs_cli.Ecs
 # Logs.set_level (Some Info);;
 - : unit = ()
 ```

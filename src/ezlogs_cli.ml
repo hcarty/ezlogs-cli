@@ -1,6 +1,5 @@
 module Json = Yojson.Basic
 module String_map = Map.Make (String)
-module Ecs = Ecs
 
 let timestamp_of_tags_or_now (tags : Logs.Tag.set) =
   match Logs.Tag.find Ecs.tag tags with

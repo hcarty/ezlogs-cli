@@ -1,5 +1,3 @@
-module Ecs = Ecs
-
 module Line_output : sig
   val reporter : Format.formatter -> Logs.reporter
 
