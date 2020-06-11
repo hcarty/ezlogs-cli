@@ -31,9 +31,10 @@ jobs:
         with:
           ocaml-version: ${{ matrix.ocaml-version }}
 
+      - run: opam pin add ecs.dev -n .
       - run: opam pin add ezlogs-cli.dev -n .
       - run: opam pin add ezlogs-cli-lwt.dev -n .
-      - run: opam depext -yt ezlogs-cli ezlogs-cli-lwt
+      - run: opam depext -yt ecs ezlogs-cli ezlogs-cli-lwt
       - run: opam install -t . --deps-only
       - run: opam exec -- dune build
       - run: opam exec -- dune runtest
