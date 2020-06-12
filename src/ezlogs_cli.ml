@@ -50,7 +50,7 @@ module Json_output = struct
         | V (tag_definition, tag_value) ->
           let name = Logs.Tag.name tag_definition in
           let tag_string =
-            Fmt.str "%a" (Logs.Tag.printer tag_definition) tag_value
+            Fmt.str "%a@." (Logs.Tag.printer tag_definition) tag_value
           in
           String_map.update name (fun _v -> Some (`String tag_string)) map)
       tags String_map.empty
