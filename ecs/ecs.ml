@@ -573,6 +573,7 @@ type t =
   | Error of Error.t
   | Event of Event.t
   | File of File.t
+  | Http of Http.t
   | Log of Log.t
   | Service of Service.t
   | Trace of Trace.t
@@ -583,6 +584,7 @@ let base fields = List.map (fun f -> Base f) fields
 let error fields = List.map (fun f -> Error f) fields
 let event fields = List.map (fun f -> Event f) fields
 let file fields = List.map (fun f -> File f) fields
+let http fields = List.map (fun f -> Http f) fields
 let log fields = List.map (fun f -> Log f) fields
 let service fields = List.map (fun f -> Service f) fields
 let trace fields = List.map (fun f -> Trace f) fields
@@ -595,6 +597,7 @@ let to_name (field : t) =
   | Event e -> Event.to_name e
   | Error e -> Error.to_name e
   | File f -> File.to_name f
+  | Http h -> Http.to_name h
   | Log l -> Log.to_name l
   | Service s -> Service.to_name s
   | Trace t -> Trace.to_name t
@@ -607,6 +610,7 @@ let pp ppf (field : t) =
   | Event e -> Event.pp ppf e
   | Error e -> Error.pp ppf e
   | File f -> File.pp ppf f
+  | Http h -> Http.pp ppf h
   | Log l -> Log.pp ppf l
   | Service s -> Service.pp ppf s
   | Trace t -> Trace.pp ppf t
@@ -619,6 +623,7 @@ let to_json (field : t) =
   | Event e -> Event.to_json e
   | Error e -> Error.to_json e
   | File f -> File.to_json f
+  | Http h -> Http.to_json h
   | Log l -> Log.to_json l
   | Service s -> Service.to_json s
   | Trace t -> Trace.to_json t

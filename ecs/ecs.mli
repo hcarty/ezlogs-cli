@@ -252,6 +252,7 @@ type t =
   | Error of Error.t
   | Event of Event.t
   | File of File.t
+  | Http of Http.t
   | Log of Log.t
   | Service of Service.t
   | Trace of Trace.t
@@ -270,6 +271,7 @@ val base : Base.t list -> t list
 val error : Error.t list -> t list
 val event : Event.t list -> t list
 val file : File.t list -> t list
+val http : Http.t list -> t list
 val log : Log.t list -> t list
 val service : Service.t list -> t list
 val trace : Trace.t list -> t list
