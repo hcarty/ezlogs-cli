@@ -300,6 +300,99 @@ module Hash = struct
 end
 module _ : Field_def = Hash
 
+module Http = struct
+  type request =
+    | Body_bytes of int
+    | Body_content of string
+    | Bytes of int
+    | Method of string
+    | Referrer of Uri.t
+
+  type response =
+    | Body_bytes of int
+    | Body_content of string
+    | Bytes of int
+    | Status_code of int
+
+  type t =
+    | Request of request
+    | Response of response
+    | Version of string
+
+  let request_to_name (field : request) =
+    match field with
+    | Body_bytes _ -> "body.bytes"
+    | Body_content _ -> "body.content"
+    | Bytes _ -> "bytes"
+    | Method _ -> "method"
+    | Referrer _ -> "referrer"
+
+  let pp_request ppf (field : request) =
+    match field with
+    | Body_bytes i
+    | Bytes i ->
+      Fmt.int ppf i
+    | Body_content s
+    | Method s ->
+      Fmt.string ppf s
+    | Referrer u -> Uri.pp ppf u
+
+  let request_to_json (field : request) : Json.t =
+    match field with
+    | Body_bytes i
+    | Bytes i ->
+      `Int i
+    | Body_content s
+    | Method s ->
+      `String s
+    | Referrer u -> `String (Uri.to_string u)
+
+  let response_to_name (field : response) =
+    match field with
+    | Body_bytes _ -> "body.bytes"
+    | Body_content _ -> "body.content"
+    | Bytes _ -> "bytes"
+    | Status_code _ -> "status_code"
+
+  let pp_response ppf (field : response) =
+    match field with
+    | Body_bytes i
+    | Bytes i
+    | Status_code i ->
+      Fmt.int ppf i
+    | Body_content s -> Fmt.string ppf s
+
+  let response_to_json (field : response) : Json.t =
+    match field with
+    | Body_bytes i
+    | Bytes i
+    | Status_code i ->
+      `Int i
+    | Body_content s -> `String s
+
+  let to_name (field : t) =
+    match field with
+    | Request r -> "http.request" ^ request_to_name r
+    | Response r -> "http.response" ^ response_to_name r
+    | Version _ -> "http.version"
+
+  let pp ppf (field : t) =
+    match field with
+    | Request r -> pp_request ppf r
+    | Response r -> pp_response ppf r
+    | Version v -> Fmt.string ppf v
+
+  let to_json (field : t) : Json.t =
+    match field with
+    | Request r -> request_to_json r
+    | Response r -> response_to_json r
+    | Version v -> `String v
+
+  let request (fields : request list) = List.map (fun f -> Request f) fields
+  let response (fields : response list) = List.map (fun f -> Response f) fields
+end
+module _ : Field_def = Http
+
 module File = struct
   type t =
     | Hash of Hash.t
