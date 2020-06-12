@@ -148,6 +148,32 @@ module Hash : sig
     | Sha256 of string
     | Sha512 of string
 end
+module Http : sig
+  (** {1 HTTP fields}
+
+      Reference: {:https://www.elastic.co/guide/en/ecs/current/ecs-http.html} *)
+
+  type request =
+    | Body_bytes of int
+    | Body_content of string
+    | Bytes of int
+    | Method of string
+    | Referrer of Uri.t
+
+  type response =
+    | Body_bytes of int
+    | Body_content of string
+    | Bytes of int
+    | Status_code of int
+
+  type t =
+    | Request of request
+    | Response of response
+    | Version of string
+
+  val request : request list -> t list
+  val response : response list -> t list
+end
 module File : sig
   (** {1 File fields}
 
