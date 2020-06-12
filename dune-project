@@ -12,15 +12,32 @@
 (generate_opam_files true)
 
 (package
+ (name ecs)
+ (synopsis "Elastic Common Scheme (ECS) field library")
+ (depends
+  (ocaml (>= 4.08.0))
+  (dune (>= 2.5.0))
+  (fmt (>= 0.8.8))
+  (logs (>= 0.7.0))
+  (mdx (and :with-test (>= 1.6.0)))
+  (ppx_deriving (>= 4.5))
+  (ptime (>= 0.8.5))
+  (uri (>= 3.0.0))
+  (yojson (>= 1.6.0))))
+
+(package
  (name ezlogs-cli)
  (synopsis "Simple, line-based and ECS-ready JSON Logs configuration")
  (depends
   (ocaml (>= 4.08.0))
+  (ecs (= :version))
   (dune (>= 2.5.0))
   (cmdliner (>= 1.0.4))
   (fmt (>= 0.8.8))
   (logs (>= 0.7.0))
   (mdx (and :with-test (>= 1.6.0)))
+  (ptime (>= 0.8.5))
+  (uri (>= 3.0.0))
   (yojson (>= 1.6.0))))
 
 (package
@@ -28,10 +45,12 @@
  (synopsis "Simple, line-based and ECS-ready JSON Logs configuration")
  (depends
   (ocaml (>= 4.08.0))
+  (ezlogs-cli (= :version))
   (dune (>= 2.5.0))
   (cmdliner (>= 1.0.4))
   (fmt (>= 0.8.8))
   (logs (>= 0.7.0))
   (lwt (>= 4.0.0))
   (mdx (and :with-test (>= 1.6.0)))
+  (ptime (>= 0.8.5))
   (yojson (>= 1.6.0))))

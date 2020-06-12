@@ -1,32 +1,16 @@
-module Common_tags = struct
-  let epoch_to_timestamp epoch_time =
-    (* NOTE: This assumes the host is UTC *)
-    let { Unix.tm_year; tm_mon; tm_mday; tm_hour; tm_min; tm_sec; _ } =
-      Unix.gmtime epoch_time
-    in
-    let seconds = Float.of_int tm_sec +. fst (Float.modf epoch_time) in
-    Fmt.str "%04d-%02d-%02dT%02d:%02d:%06.3fZ" (tm_year + 1900) (tm_mon + 1)
-      tm_mday tm_hour tm_min seconds
+module Json = Yojson.Basic
+module String_map = Map.Make (String)
 
-  let pp_epoch = Fmt.of_to_string epoch_to_timestamp
+let timestamp_of_tags_or_now (tags : Logs.Tag.set) =
+  match Logs.Tag.find Ecs.tag tags with
+  | None -> Ecs.Epoch.to_timestamp (Ptime_clock.now ())
+  | Some ecs ->
+    ( match Ecs.Fields.find (Base (Timestamp Ptime.epoch)) ecs with
+    | None -> Ecs.Epoch.to_timestamp (Ptime_clock.now ())
+    | Some timestamp -> Fmt.str "%a" Ecs.pp timestamp
+    )
 
-  let epoch =
-    Logs.Tag.def ~doc:"Unix epoch to use as the log time" "epoch" pp_epoch
-end
-
-let timestamp_of_tags_or_now (tags : Logs.Tag.set option) =
-  let epoch =
-    match tags with
-    | None -> Unix.gettimeofday ()
-    | Some tags ->
-      ( match Logs.Tag.find Common_tags.epoch tags with
-      | None -> Unix.gettimeofday ()
-      | Some epoch -> epoch
-      )
-  in
-  Fmt.str "%a" (Logs.Tag.printer Common_tags.epoch) epoch
-
-module Line = struct
+module Line_output = struct
   let reporter ppf =
     let report _src level ~over k msgf =
       let continuation _ =
@@ -43,7 +27,7 @@ module Line = struct
             Fmt.kpf k ppf "%s%s [%s] %s@." header timestamp level message)
           fmt
       in
-      msgf @@ fun ?(header = "") ?tags fmt ->
+      msgf @@ fun ?(header = "") ?(tags = Logs.Tag.empty) fmt ->
       write header tags continuation ppf fmt
     in
     { Logs.report }
@@ -58,21 +42,47 @@ module Line = struct
     Cmdliner.Term.(const setup $ Fmt_cli.style_renderer () $ Logs_cli.level ())
 end
 
-module Json = struct
-  module Json = Yojson.Basic
-
-  let dict_of_tags (tags : Logs.Tag.set) =
-    let tags = Logs.Tag.rem Common_tags.epoch tags in
+module Json_output = struct
+  let labels_of_tags (tags : Logs.Tag.set) : Json.t String_map.t =
     Logs.Tag.fold
-      (fun tag dict ->
+      (fun tag map ->
         match tag with
         | V (tag_definition, tag_value) ->
           let name = Logs.Tag.name tag_definition in
           let tag_string =
             Fmt.str "%a" (Logs.Tag.printer tag_definition) tag_value
           in
-          (name, `String tag_string) :: dict)
-      tags []
+          String_map.update name (fun _v -> Some (`String tag_string)) map)
+      tags String_map.empty
+
+  let json_fields_of_tags (tags : Logs.Tag.set) : Json.t String_map.t =
+    let fields = Ecs.fields_of_tags tags in
+    let tags = Logs.Tag.rem Ecs.tag tags in
+    let labels = labels_of_tags tags |> String_map.bindings in
+    match labels with
+    | [] -> fields
+    | _ -> String_map.add "labels" (`Assoc labels) fields
+
+  let add_basic_fields (fields : Json.t String_map.t) level src message =
+    let add_if_new name thunk map =
+      if String_map.mem name map then
+        map
+      else
+        String_map.add name (thunk ()) map
+    in
+    let replace key value map =
+      String_map.remove key map |> String_map.add key value
+    in
+    add_if_new "@timestamp"
+      (fun () -> `String (Ecs.Epoch.to_timestamp (Ptime_clock.now ())))
+      fields
+    |> add_if_new "log.level" (fun () ->
+           `String (Logs.level_to_string (Some level)))
+    |> add_if_new "log.logger" (fun () -> `String (Logs.Src.name src))
+    (* Always include the log message *)
+    |> replace "message" (`String message)
+    (* Always include the ECS version we're targeting *)
+    |> replace "ecs.version" (`String Ecs.ecs_version)
 
   let reporter ppf =
     let report src level ~over k msgf =
@@ -83,24 +93,16 @@ module Json = struct
       let as_json _header tags k ppf fmt =
         Fmt.kstr
           (fun message ->
-            let tags_dict =
-              match tags with
-              | None -> []
-              | Some set -> dict_of_tags set
+            let fields =
+              let ecs_fields = json_fields_of_tags tags in
+              add_basic_fields ecs_fields level src message
             in
-            let json : Json.t =
-              `Assoc
-                (("@timestamp", `String (timestamp_of_tags_or_now tags))
-                :: ("log.level", `String (Logs.level_to_string (Some level)))
-                :: ("log.logger", `String (Logs.Src.name src))
-                :: ("message", `String message)
-                :: tags_dict
-                )
-            in
+            let json : Json.t = `Assoc (String_map.bindings fields) in
             Fmt.kpf k ppf "%s" (Json.to_string json))
           fmt
       in
-      msgf @@ fun ?header ?tags fmt -> as_json header tags continuation ppf fmt
+      msgf @@ fun ?header ?(tags = Logs.Tag.empty) fmt ->
+      as_json header tags continuation ppf fmt
     in
     { Logs.report }
 
@@ -117,8 +119,8 @@ type format =
 
 let setup (format : format) style_renderer level =
   match format with
-  | Line -> Line.setup style_renderer level
-  | Json -> Json.setup level
+  | Line -> Line_output.setup style_renderer level
+  | Json -> Json_output.setup level
 
 let format_conv : format Cmdliner.Arg.conv =
   Cmdliner.Arg.enum [ ("line", Line); ("json", Json) ]

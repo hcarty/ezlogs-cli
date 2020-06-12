@@ -1,9 +1,4 @@
-module Common_tags : sig
-  val epoch : float Logs.Tag.def
-  (** A tag defining a Unix epoch time to associate with a log message. *)
-end
-
-module Line : sig
+module Line_output : sig
   val reporter : Format.formatter -> Logs.reporter
 
   val logging : unit Cmdliner.Term.t
@@ -14,7 +9,7 @@ module Line : sig
       such as enabling/disabling color support and setting the log level. *)
 end
 
-module Json : sig
+module Json_output : sig
   val reporter : Format.formatter -> Logs.reporter
 
   val logging : unit Cmdliner.Term.t

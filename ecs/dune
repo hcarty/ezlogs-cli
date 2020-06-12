@@ -1,0 +1,5 @@
+(library
+ (public_name ecs)
+ (preprocess
+  (pps ppx_deriving.std))
+ (libraries fmt logs ptime.clock.os uri yojson))

@@ -57,7 +57,7 @@ module Json = struct
           m )
     in
     let (out, out_flush) = buf_fmt ~like:ppf in
-    let reporter = Ezlogs_cli.Json.reporter out in
+    let reporter = Ezlogs_cli.Json_output.reporter out in
     let report src level ~over k msgf =
       let k () =
         let write () = Lwt_io.write Lwt_io.stderr (out_flush ()) in
