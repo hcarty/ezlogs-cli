@@ -50,7 +50,7 @@ module Json_output = struct
         | V (tag_definition, tag_value) ->
           let name = Logs.Tag.name tag_definition in
           let tag_string =
-            Fmt.str "%a@." (Logs.Tag.printer tag_definition) tag_value
+            Fmt.str "%a" (Logs.Tag.printer tag_definition) tag_value
           in
           String_map.update name (fun _v -> Some (`String tag_string)) map)
       tags String_map.empty
@@ -98,7 +98,7 @@ module Json_output = struct
               add_basic_fields ecs_fields level src message
             in
             let json : Json.t = `Assoc (String_map.bindings fields) in
-            Fmt.kpf k ppf "%s" (Json.to_string json))
+            Fmt.kpf k ppf "%s@." (Json.to_string json))
           fmt
       in
       msgf @@ fun ?header ?(tags = Logs.Tag.empty) fmt ->
