@@ -372,8 +372,8 @@ module Http = struct
 
   let to_name (field : t) =
     match field with
-    | Request r -> "http.request" ^ request_to_name r
-    | Response r -> "http.response" ^ response_to_name r
+    | Request r -> "http.request." ^ request_to_name r
+    | Response r -> "http.response." ^ response_to_name r
     | Version _ -> "http.version"
 
   let pp ppf (field : t) =
