@@ -26,6 +26,20 @@
   (yojson (>= 1.6.0))))
 
 (package
+ (name elastic-apm)
+ (synopsis "Elastic Application Performance Monitoring (APM) library")
+ (depends
+  (ocaml (>= 4.08.0))
+  (dune (>= 2.5.0))
+  (fmt (>= 0.8.8))
+  (logs (>= 0.7.0))
+  (mdx (and :with-test (>= 1.6.0)))
+  (ppx_deriving (>= 4.5))
+  (ptime (>= 0.8.5))
+  (uri (>= 3.0.0))
+  (yojson (>= 1.6.0))))
+
+(package
  (name ezlogs-cli)
  (synopsis "Simple, line-based and ECS-ready JSON Logs configuration")
  (depends

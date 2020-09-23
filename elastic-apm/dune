@@ -1,0 +1,6 @@
+(library
+ (public_name elastic-apm)
+ (name elastic_apm)
+ (preprocess
+  (pps ppx_deriving.std))
+ (libraries ecs fmt logs ptime.clock.os uri yojson))
